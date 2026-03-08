@@ -1,103 +1,189 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+export default function SeedDataPage() {
+  const data = useQuery(api.seedData.listAll);
+
+  if (data === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Loading seed data from Convex…</p>
+      </div>
+    );
+  }
+
+  if (data === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-destructive">Failed to load data. Is Convex running?</p>
+      </div>
+    );
+  }
+
+  const { chains, restaurants, dishes, menuTemplates, aiRules, ingredients } =
+    data;
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <header>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            RMint — Seed data
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Convex + Neon setup verification. Run <code className="rounded bg-muted px-1">seed:seedDatabase</code> in
+            the dashboard if tables are empty.
+          </p>
+        </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Chains</CardTitle>
+              <Badge variant="secondary">{chains.length}</Badge>
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm space-y-1">
+                {chains.map((c) => (
+                  <li key={c._id}>
+                    <span className="font-medium">{c.name}</span>{" "}
+                    <span className="text-muted-foreground">({c.slug})</span>
+                  </li>
+                ))}
+                {chains.length === 0 && (
+                  <li className="text-muted-foreground">None. Run seed.</li>
+                )}
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Restaurants</CardTitle>
+              <Badge variant="secondary">{restaurants.length}</Badge>
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm space-y-1">
+                {restaurants.map((r) => (
+                  <li key={r._id}>
+                    <span className="font-medium">{r.name}</span>{" "}
+                    <span className="text-muted-foreground">({r.slug})</span>
+                  </li>
+                ))}
+                {restaurants.length === 0 && (
+                  <li className="text-muted-foreground">None. Run seed.</li>
+                )}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Dishes</CardTitle>
+            <Badge variant="secondary">{dishes.length}</Badge>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Cuisine</TableHead>
+                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead className="text-right">Cost</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {dishes.map((d) => (
+                  <TableRow key={d._id}>
+                    <TableCell className="font-medium">{d.name}</TableCell>
+                    <TableCell>{d.category}</TableCell>
+                    <TableCell>{d.cuisineType}</TableCell>
+                    <TableCell className="text-right">${d.basePrice}</TableCell>
+                    <TableCell className="text-right">${d.costPerServing}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {dishes.length === 0 && (
+              <p className="text-sm text-muted-foreground py-4">No dishes. Run seed.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Menu templates</CardTitle>
+              <Badge variant="secondary">{menuTemplates.length}</Badge>
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm space-y-1">
+                {menuTemplates.map((m) => (
+                  <li key={m._id}>
+                    <span className="font-medium">{m.name}</span> — {m.cuisineType} /{" "}
+                    {m.mealType}
+                  </li>
+                ))}
+                {menuTemplates.length === 0 && (
+                  <li className="text-muted-foreground">None. Run seed.</li>
+                )}
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">AI rules</CardTitle>
+              <Badge variant="secondary">{aiRules.length}</Badge>
+            </CardHeader>
+            <CardContent>
+              <ul className="text-sm space-y-1">
+                {aiRules.map((r) => (
+                  <li key={r._id}>
+                    <span className="font-medium">{r.label}</span> — {r.ruleType}
+                  </li>
+                ))}
+                {aiRules.length === 0 && (
+                  <li className="text-muted-foreground">None. Run seed.</li>
+                )}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Ingredients</CardTitle>
+            <Badge variant="secondary">{ingredients.length}</Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {ingredients.map((i) => (
+                <Badge key={i._id} variant="outline">
+                  {i.name} ({i.unit})
+                </Badge>
+              ))}
+              {ingredients.length === 0 && (
+                <p className="text-sm text-muted-foreground">None. Run seed.</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

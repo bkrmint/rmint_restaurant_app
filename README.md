@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RMint Restaurant App
 
-## Getting Started
+Meal session planning app with AI co-worker panel. See [docs/architecture/00-OVERVIEW.md](docs/architecture/00-OVERVIEW.md) for the full design.
 
-First, run the development server:
+## Phase 0 — Project scaffold (current)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Prerequisites
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- [Bun](https://bun.sh/)
+- [Convex](https://convex.dev) account
+- (Optional) [Neon](https://neon.tech) and GitHub/Google OAuth apps for auth
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Install dependencies**
 
-## Learn More
+   ```bash
+   bun install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. **Convex**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   - **URLs:** Backend `https://calm-chickadee-544.convex.cloud`, HTTP/auth `https://calm-chickadee-544.convex.site`.
+   - `.env.local` already has `NEXT_PUBLIC_CONVEX_URL` for this deployment. To link a different project or regenerate code, run `npx convex dev --configure=new`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Environment variables**
 
-## Deploy on Vercel
+   - **Neon (server-side only):** In **Convex Dashboard → Settings → Environment Variables**, add:
+     - `NEON_DATABASE_URL` = your Neon connection string (same value as `DATABASE_URL`; keep it only in Convex).
+     To create the analytics tables, run: `DATABASE_URL='postgresql://...' bun run scripts/run-neon-ddl.ts` (or paste `scripts/neon-ddl.sql` into the Neon SQL Editor). Verify with the `testNeon:ping` action in the Convex dashboard.
+   - **Auth:** In the same Convex env vars:
+     - `SITE_URL` = `http://localhost:3000`
+     - `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET` and/or `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`
+     - `JWT_PRIVATE_KEY` and `JWKS` (from [Convex Auth setup](https://labs.convex.dev/auth/setup/manual)).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. **Seed the database**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   In Convex dashboard → Functions → run `seed:seedDatabase` (internal mutation) once to create sample chain, restaurants, dishes, and rules.
+
+5. **Run the app**
+
+   ```bash
+   bun dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000). Use “Sign in with GitHub” or “Sign in with Google” once OAuth is configured.
+
+See **[docs/TESTING-PHASE0.md](docs/TESTING-PHASE0.md)** for a step-by-step testing guide.
+
+### Phase 0 exit criteria
+
+- [ ] `bun dev` starts Next.js at localhost:3000
+- [ ] `npx convex dev` connects to the Convex backend
+- [ ] Auth flow works (login, logout, identity check) after OAuth is configured
+- [ ] Seed data is visible in the Convex dashboard (chain, 2 restaurants, dishes, templates)
+- [ ] Neon connection verified from Convex dashboard (run `testNeon:ping` action) if Neon is set up
+- [ ] shadcn components render correctly
+- [ ] CI pipeline runs on push (set `CONVEX_DEPLOY_KEY` and `NEXT_PUBLIC_CONVEX_URL` in GitHub)
+
+### Scripts
+
+- `bun dev` — Next.js dev server (Turbopack)
+- `bun run build` — Next.js production build
+- `npx convex dev` — Convex backend dev (run with Convex configured)
+- `scripts/neon-ddl.sql` — Analytics DDL (reference); apply via Neon SQL Editor or `scripts/run-neon-ddl.ts`
+- `DATABASE_URL='...' bun run scripts/run-neon-ddl.ts` — Apply analytics tables to Neon (uses `NEON_DATABASE_URL` or `DATABASE_URL`)
+
+## Tech stack
+
+- **Next.js 15** (App Router, TypeScript, Turbopack)
+- **Convex** — backend, reactive queries, auth
+- **Neon** — analytics PostgreSQL (sync from Convex)
+- **Tailwind CSS v4** + **shadcn/ui**
+- **Jotai**, **react-hook-form**, **zod**, **date-fns**, **recharts**
